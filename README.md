@@ -1,7 +1,5 @@
-# Basic-Screening-Tool
-A PIP in which I coded a basic screening tool that ranks a predefined list of mega-cap tech companies based on qualities commonly associated with attractive investment opportunities
 
-# Introduction
+## Introduction
 
 Fundamental analysis is a common investing technique where the strength of a company’s fundamentals is used to assess whether investing today could prove profitable in the future. This approach is distinct from technical analysis, which relies on price movements to determine when to buy and sell rather than focussing on underlying company characteristics.
 
@@ -11,13 +9,13 @@ The screener’s ranking of each company is based on the overall score it alloca
 
 By and large, the screener calculates the score to award for each individual metric by retrieving the metric value for each company and applying min-max normalisation to reward companies based on their relative performance. However, a small number of metrics are evaluated using threshold-based rules rather than peer comparison. Additionally, certain edge cases where peer comparison is not meaningful are handled via manual point allocation. This means that the rankings displayed by the screener should be interpreted as a combination of comparative and rule-based scoring instead of being purely based on relative performance.
 
-Caveat:
+###### Caveat:
 
 It should be made clear that while the metrics used in the scoring system were chosen with the intention of filtering for potentially attractive investments, companies near the top of the ranking cannot be interpreted as those more likely to provide strong returns. Strictly, all that can be deduced from high-ranking companies is that they most closely satisfy the criteria the screener uses to identify attractive investments. Whether these criteria are valid and meet the user’s standards of rigour is up to them to decide.
 
 
 
-# Context
+## Context
 
 #### Screener Logic:
 
@@ -39,7 +37,7 @@ Accounting for momentum alongside valuation and company health-related metrics i
 
 
 
-# General Comments on Screener Metrics and Weighting
+## General Comments on Screener Metrics and Weighting
 
 #### Metrics:
 
@@ -51,11 +49,11 @@ The metrics used by the screener are not intended to be unbiased across all comp
 
 For the Buffett-like approach, the weighting of the valuation and health scores gives each valuation metric and health subsection equal influence. This weighting was chosen to benefit well-rounded companies. However, for the Stockopedia-like approach, the weighting is slightly adjusted to put more emphasis on top-line-based metrics and growth metrics relative to bottom-line-based metrics. This adjustment was made to try to reward young, expanding companies more generously, since companies at this stage typically prioritise capturing market share over cost control, meaning they will likely receive higher scores from revenue- and growth-based metrics compared to earnings-based metrics.
 
-A scoring system which rewards young, growing companies slightly more favourably is used for the Stockopedia-like approach on the basis that they often exhibit strong momentum, which is one of the three key factors that this approach focusses on. However, metrics assessing profitability, liquidity, and debt-servicing ability are still accounted for after the weighting is adjusted. This helps prevent companies pursuing growth at any cost from being rewarded too generously by the screener.
+A scoring system which rewards young, expanding companies slightly more favourably is used for the Stockopedia-like approach on the basis that they often exhibit strong momentum, which is one of the three key factors that this approach focusses on. However, metrics assessing profitability, liquidity, and debt-servicing ability are still accounted for after the weighting is adjusted. This helps prevent companies pursuing growth at any cost from being rewarded too generously by the screener.
 
 
 
-# Metric Insights
+## Metric Insights
 
 #### Trailing P/E, Forward P/E:
 
@@ -121,11 +119,9 @@ Note: the variable storing the scores for this metric is called ‘goldenCrossSc
 
 #### 200-Day Average Change %:
 
-Intention: reward companies whose current share prices are significantly above their 200DMA. This metric will generously score early breakouts, as well as more established share price trends. However, due to the lag in the moving average, it is sensitive to the current share price. Consequently, it can be vulnerable to misleading signals caused by short-term, intense share price changes that quickly reverse.
+Intention: reward companies whose current share prices are significantly above their 200DMA. This metric will generously score early breakouts, as well as more established share price trends. However, due to the lag in the moving average, it is sensitive to the current share price. Consequently, it can be vulnerable to misleading signals caused by short-term, intense current share price changes that quickly reverse.
 
-
-
-# Program Logic Comments
+## Program Logic Comments
 
 Note: For the list of mega-cap tech stocks that the screener analyses, most of the edge case adjustments are unlikely to be necessary and are simply added for practice.
 
@@ -143,45 +139,44 @@ For each of these valuation metrics, the screener treats negative cases by exten
 
 It could be argued that this treatment is too lenient and that companies with negative E should receive a point deduction. In the previous example, the companies with negative E are potentially in an even weaker financial position than those with very low but positive E (which will receive the minimum or a very low score). Therefore, it is reasonable to suggest that companies with negative E should be penalised. This treatment was not applied because the score also depends on P. If penalisation were used, a company with a slightly negative E and low P would lose points relative to a company with a very low but positive E and very high P. However, based on an economic interpretation of the situation, the company with negative E is likely the more attractive valuation opportunity.
 
-###### Breakdown of Logic for each Function’s Handling of Negatives:
-
-In evToRevenueScore(), the following logic is applied when handling non-positive EV/R:
-
-If the ratio is non-positive, then EV is non-positive since R can be assumed positive. The ratio is treated as a very low but positive EV/R and receives the maximum score.
+###### Breakdown of Logic for each Function’s Handling of Negatives: 
+In evToRevenueScore(), the following logic is applied when handling non-positive EV/R: <br>If the ratio is non-positive, then EV is non-positive since R can be assumed positive. The ratio is treated as a very low but positive EV/R and receives the maximum score.
 
 It should be noted that, in this case, inverting the scores allocated by the min-max normalisation function without adjustment for negatives does not completely contradict the scoring trend, unlike with the P/E. By default, the negative ratios would be allocated the highest scores, greater than those allocated to companies with the smallest positive EV/R. The main issue with this treatment, from an economic perspective, is that a negative EV/R does not always merit a higher score than a positive EV/R. For example, if a company has a slightly negative EV and very small R, it will receive more points than a company with a slightly positive EV and very large R.
 
 However, the treatment that the screener uses instead of inverting the allocated scores without further adjustment is also flawed. Two companies with non-positive EV will both receive the maximum score of 1, even if one has a much larger R than the other.
 
+<br>
 In evToEbitdaScore(), the following logic is applied when handling non-positive EV/EBITDA:
 
 If EV is non-positive and EBITDA is positive, then the ratio is treated as a very low EV/EBITDA and receives the maximum score. If EV is positive and EBITDA is negative, then the ratio is treated as a very high EV/EBITDA and receives the minimum score. If EV is non-positive and EBITDA is negative, then the company receives a score of 0.5 points. Manual point allocation is required in this case because the EV/EBITDA value obtained when both components are negative is not economically meaningful. Therefore, it must be ignored, leaving the company with nothing to be scored on for this metric. Awarding the company 0.5 points was viewed as a balanced score to allocate considering its relative performance under this metric cannot be assessed.
 
 An alternative approach would be to skip scoring for companies with non-positive EV and negative EBITDA. However, this would allow other companies to receive scores that the skipped companies cannot access, placing them at a scoring disadvantage despite the absence of information suggesting they do or do not merit it.
 
+<br>
 In pegScore(), the following logic is applied when handling negative PEG:
 
 If PEG is negative, then exactly one of earnings or expected earnings growth is negative, since the numerator can be assumed to be positive. The ratio is treated as a very high value and receives the minimum score. If PEG is positive and P/E is negative, then both earnings and expected earnings growth are negative, making the economic interpretation of the positive PEG unclear. In this case, the company receives 0.5 points. As discussed in evToEbitdaScore(), 0.5 points is considered a reasonable score to allocate to companies whose relative performance under the metric cannot be assessed.
 
+<br>
 In peAndPsScore(), the following logic is applied when handling negative P/E:
 
 If P/E is negative, then earnings are negative, since the numerator can be assumed to be positive. The ratio is treated as a very high value and receives the minimum score.
 
+<br>
 In priceToFcfScore(), the following logic is applied when handling non-positive P/FCF:
 
 If FCF is non-positive, then the ratio is negative or undefined, since the numerator can be assumed to be positive. The ratio is treated as a very high value and receives the minimum score.
 
 #### Division by Zero Comments
 
-Some ratios, like CFO/totalDebt, must be calculated by the screener using data retrieved from the stock information dictionaries whereas other metrics, like P/E and P/S, can be directly retrieved from the dictionaries. Division by zero is not accounted for in the functions which score metrics that are directly retrieved. This is because Yahoo! Finance, whom the data is retrieved from, will handle the division by zero themselves, and, in response, yfinance will return null or missing data when it occurs. Any company missing any of the data necessary for analysis is removed before scoring begins.
+Some metrics, like CFO/totalDebt, must be calculated by the screener using data retrieved from the stock information dictionaries whereas other metrics, like P/E and P/S, can be directly retrieved from the dictionaries. Division by zero is not accounted for in the functions which score metrics that are directly retrieved. This is because invalid calculations are typically handled upstream by the data provider, and, in response, yfinance will likely return null or missing data when this occurs. Any company missing any of the data necessary for analysis is removed before scoring begins.
 
 In normalisePoints(), division by zero occurs when minVal equals maxVal. If this happens, the function skips the scoring calculations and assigns each company zero points for the metric. This is justified by the fact that they all have the same metric value in this case, meaning none of them has a comparative advantage.
 
 The function proxToHighScore() awards points based on the proximity of a company’s current share price to its peak over the last year. It can safely be assumed that the peak share price over the last year for each company analysed will be non-zero, meaning the function does not need to account for division by zero.
 
-In epsGrowth(), division by zero is handled using the technique of extending the scoring logic:
-
-If trailing EPS is zero and forecast EPS is positive, the undefined EPS growth is treated as an extreme case of a company with a very small positive trailing EPS and positive forecast EPS. Such a company would likely have a very high EPS growth and, therefore, receive a high score. Accordingly, companies with zero trailing EPS and positive forecast EPS are assigned the maximum score. If trailing EPS is zero and forecast EPS is non-positive, then, applying the same idea, the undefined EPS growth is treated as a very low value and receives the minimum score.
+In epsGrowth(), division by zero is handled using the technique of extending the scoring logic: <br> If trailing EPS is zero and forecast EPS is positive, the undefined EPS growth is treated as an extreme case of a company with a very small positive trailing EPS and positive forecast EPS. Such a company would likely have a very high EPS growth and, therefore, receive a high score. Accordingly, companies with zero trailing EPS and positive forecast EPS are assigned the maximum score. If trailing EPS is zero and forecast EPS is non-positive, then, applying the same idea, the undefined EPS growth is treated as a very low value and receives the minimum score.
 
 Note: the same logic, using total debt and operating cashflow instead of trailing EPS and forecast EPS, is applied in cfoToDebt().
 
@@ -207,7 +202,7 @@ In the currentRatioScore() function, the median is used instead of the mean to e
 
 
 
-# Addressing Potential Screener Issues
+## Addressing Potential Screener Issues
 
 1) For certain stocks, some metrics used by the screener may be missing from their stock information dictionaries. However, the program includes measures to handle this scenario without crashing. The stocks this occurs for are identified and removed from the list of stocks analysed by the screener before scoring begins. Depending on the number of stocks with missing data, this has the potential to limit the range of different tech companies compared by the screener.
 2) It is possible that issues with yfinance prevent stock information from being retrieved for any company. However, in the two months I have spent on this project, this has happened once and it didn’t last long. If this issue occurs again, the program uses a try/except block to handle it without crashing.
