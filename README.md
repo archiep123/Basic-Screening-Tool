@@ -210,3 +210,8 @@ In the currentRatioScore() function, the median is used instead of the mean to e
 
 
 
+## Results
+
+On April 9th 2026, Micron Technology was ranked as the top stock in both of the two tables displayed. Over the next month, its share price nearly doubled.
+
+
